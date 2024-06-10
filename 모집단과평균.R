@@ -5,7 +5,7 @@ install.packages("pkgbuild")
 
 pkgbuild::has_build_tools(debug = TRUE)
 
-
+# 깃 테스트
 #install.packages('prob')
 #library(prob)
 
