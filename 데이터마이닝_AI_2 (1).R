@@ -83,8 +83,6 @@ attach(auto_mpg)
 car_lm<-lm(mpg ~ disp + hp + wt + acc, data =auto_mpg )
 
 hp
-
-
 summary(car_lm)
 
 
@@ -96,12 +94,4 @@ x_test<-c('mpg','disp','hp','wt','acc')
 
 pairs(auto_mpg[x_test], cex=1,col=as.integer(auto_mpg$cyl))
 
-str(auto_mpg)
-
-?step
-
-#AIC는 정보 이론을 기반으로 합니다. 데이터를 생성 한 프로세스를 나타내는 데 통계 모델이 사용되면 그 표현은 거의 정확하지 않습니다. 따라서 프로세스를 나타내는 모델을 사용하면 일부 정보가 손실됩니다. 
-#AIC는 주어진 모델에 의해 손실되는 정보의 상대적인 양을 추정합니다. 모델이 손실하는 정보가 적을수록 해당 모델의 품질이 높아집니다.
-#모델에 의해 손실되는 정보의 양을 추정 할 때 AIC는 모델의 적합도 와 모델의 단순성 간의 균형을 다룹니다 . 즉, AIC는 과적 합 위험과 과소 적합 위험을 모두 처리합니다.
-step(car_lm, direction = "both")
 

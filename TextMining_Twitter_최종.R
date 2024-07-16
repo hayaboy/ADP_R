@@ -103,7 +103,7 @@ inspect(my.corpus)
 my.corpus<-tm_map(my.corpus, content_transformer(gsub), pattern='@\\S*',replacement='')
 # @\\S* @뒤에 띄어쓰기 없이 붙어 있는 단어를 제거한다. (s는 공백임. 대문자S는 반대)
 
-my.corpus<-tm_map(my.corpus, content_transformer(gsub), pattern='http\\S*', replacement='')
+my.corpus<-tm_map(my.corpus, contenttransformer(gsub), pattern='http\\S*', replacement='')
 # http로 시작해서 공백이 생길때까지 내용을 선택하고 빈값으로 대체
 
 my.corpus<-tm_map(my.corpus, removePunctuation)

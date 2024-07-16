@@ -225,22 +225,14 @@ library(DAAG)
 install.packages("lattice")
 library(lattice)
 
-?DAAG::wages1833
-
 wages1883<-DAAG::wages1833
 
-rm(list = ls())
-
-
 str(wages1883)
-?wages1883
+
 dat<-wages1883
 dat2<-na.omit(dat)
 str(dat2)
 distdat<-dist(dat2)
-distdat
-?hclust
-hclust(distdat,method = "single")
 hc_a<-hclust(distdat,method = "single")
 plot(hc_a, hang = -1,cex=0.7)
 ?plot

@@ -1,130 +1,107 @@
+rm(list=ls())
 
+study_time<-c(2,4,6,8)
 
-sample_data<-read.csv(file.choose(), header = T)
+score<-c(81,93,91,97)
 
+st_m<-mean(study_time)
+sc_m<-mean(score)
 
-str(sample_data)
 
-head(sample_data)
+st_pyuncha<- st_m - study_time
 
-m.list<-split(sample_data$Item, sample_data$ID)
 
+va_st<-sum(st_pyuncha^2)/(length(study_time)-1)
+va_st
+var(study_time)
 
-?split
+sc_pyuncha<- sc_m - score
 
-class(m.list)
+?sd
 
 
-#트랜잭션 데이터로 변환
+sd(study_time)
+sd(score)
 
-meth
-?as
+cov(study_time,score) / (sd(study_time) * sd(score))
 
-#m.trans<-methods::as(list(m.list),"transactions")
-install.packages("arules")
-library(arules)
-m.trans<-as(m.list,"transactions")
 
-class(m.trans)
+cor(study_time, score)
 
-summary(m.trans)
 
-inspect(m.trans)
+plot(study_time,score)
 
-#Apriori 알고리즘을 사용, 지지도 20%, 신뢰도 20% 이상인 규칙
+?lm
+lm(score ~ study_time)
 
-?apriori
 
-m_rule <- apriori(m.trans, parameter = list(support=0.2, confidence=0.2,minlen=3))
+ggplot2::Cars
 
 
+auto_mpg<-read.table(file.choose(),header = FALSE, na.strings = "?")
+View(auto_mpg)
 
+str(auto_mpg)
 
-m_rule
+colnames(auto_mpg)<-c('mpg','cylinders','displacement','horsepower','weight','acceleration','model year','origin','name')
+str(auto_mpg)
 
-inspect(m_rule)
+library(dplyr)
 
+auto_mpg4<-auto_mpg %>% select(mpg,weight,horsepower) %>% filter(horsepower!="?")
 
 
-m_rule2 <- apriori(m.trans, parameter = list(support=0.2, confidence=0.2,minlen=2))
+auto_mpg3
 
-m_rule2
+attach(auto_mpg4)
 
+colnames(auto_mpg4)
 
-inspect(m_rule2)
+plot(mpg ~ weight)
 
+lm(mpg ~ weight)
 
-arules::itemFrequencyPlot()
+summary(lm(mpg ~ weight))
 
+colnames(auto_mpg)
 
-arules::itemFrequencyPlot(m.trans, support=0.2, col="red")
+auto_mpg5<-auto_mpg %>% select(mpg,displacement,horsepower,weight,acceleration) %>% filter(horsepower!="?")
 
+auto_mpg5
 
 
-#연관규칙 시각화
+lm(mpg ~ displacement + horsepower + weight + acceleration , data = auto_mpg5)
 
-library(arulesViz)
 
-plot(m_rule, method = "graph", interactive = T)
 
-plot(m_rule2, method = "graph", interactive = T)
+colnames(auto_mpg)<-c('mpg','cyl','disp','hp','wt','acc','model year','origin','name')
 
-#연관규칙 분석과 순차적 패턴 분석
+colnames(auto_mpg)
+attach(auto_mpg)
 
- #고객         연관규칙 분석                             순차적 패턴분석
- #분석관점      동시 발생 사건                         시간 및 순서에 따른 사건
- #데이터        거래집합셋(transaction data set)       식별 정보, timestamp
- #평가방법      지지도, 신뢰도, 향상도                  지지도(Sequence를 포함하는 고객 비율)
 
+car_lm<-lm(mpg ~ disp + hp + wt + acc, data =auto_mpg )
 
+hp
 
-# 순차 패터 분석 알고리즘
-#1 정렬 : 거래 데이터를 시쿼스 데이터로 변환
-#2 빈발항목 집합 : 지지도를 사용해서 빈발항목 집합 도출
-#3 변환 : 고객 시쿼스를 빈발항목 집합을 사용해서 시퀀스로 변환
-#4 시퀀스 단계 : 빈발 시퀀스를 도출
-#5 최대화 단계 : 빈발 시퀀스에서 최대 시퀀스를 탐색
 
-install.packages("arulesSequences")
-library(arulesSequences)
+summary(car_lm)
 
-data("zaki")
 
-zaki
 
-summary(zaki)
 
-inspect(zaki)
+str(auto_mpg)
 
-str(zaki)
+x_test<-c('mpg','disp','hp','wt','acc')
 
-as(zaki, "data.frame")
+pairs(auto_mpg[x_test], cex=1,col=as.integer(auto_mpg$cyl))
 
-#순차 패턴 분석
+str(auto_mpg)
 
-#순차 패턴 분석을 위해서 cspade 함수 사용
-?cspade
-
-seqr<-cspade(zaki, parameter = list(support=0.3,maxsize=5,maxlen=4))
-
-
-
-seqr
-
-
-as(seqr, "data.frame")
-
-# A가 일어나고, F가 일어날 지지도는 75%이다. 
-
-
-
-
-
-
-
-
-
-
-
-
+?step
+
+#AIC는 정보 이론을 기반으로 합니다. 데이터를 생성 한 프로세스를 나타내는 데 통계 모델이 사용되면 그 표현은 거의 정확하지 않습니다. 따라서 프로세스를 나타내는 모델을 사용하면 일부 정보가 손실됩니다. 
+#AIC는 주어진 모델에 의해 손실되는 정보의 상대적인 양을 추정합니다. 모델이 손실하는 정보가 적을수록 해당 모델의 품질이 높아집니다.
+#모델에 의해 손실되는 정보의 양을 추정 할 때 AIC는 모델의 적합도 와 모델의 단순성 간의 균형을 다룹니다 . 즉, AIC는 과적 합 위험과 과소 적합 위험을 모두 처리합니다.
+step(car_lm, direction = "both")
 
