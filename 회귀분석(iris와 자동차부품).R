@@ -1,0 +1,38 @@
+#R에서 로지스틱 회귀 모형은 glm() 함수를 이용
+
+data(iris)
+iris
+a<-subset(iris, Species=="setosa" |Species== "versicolor" )
+
+#Species는 factor(범주형 변수)로 setosa는 Y=1, versicolor는 Y=2로 인식
+
+a
+class(a$Species)
+a$Species<-factor(a$Species)
+str(a)
+?glm
+b<-glm(Species~Sepal.Length, data=a, family = binomial)
+summary(b)
+#회귀 계수의 검정에서 p값이 거의 0이므로 Sepal.Length가 매우 유의한 변수이며
+#Sepal.Length가 한 단위 증가함에 따라  versicolor(Y=2)일 오즈가
+#exp(5.140)=170 배 증가함을 알수 있다.
+
+
+#Null deviance(편차값): 절편만 포함하는 모형의 완전모형으로부터의이탈도(deviance)
+
+
+coef(b)
+exp(coef(b)["Sepal.Length"])
+confint(b, parm="Sepal.Length")
+exp(confint(b, parm="Sepal.Length"))
+
+#fitted()함수를 통해 적합 결과 확인
+fitted(b)[c(1:5,96:100)]
+
+#predict()함수를 이용하여 새로운 자료에 대한 예측 수행
+predict(b,newdata = a[c(1,50,51,100), ], type="response")
+
+#cdplot() 함수는 Sepal.Length(연속형변수)의 변화에 따른 범주형 변수
+
+cdplot(Species~Sepal.Length, data=a)
+#정리 Sepal.Length가 커짐에 따라 versicolor의 확률이 증가

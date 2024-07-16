@@ -1,4 +1,4 @@
-﻿install.packages("twitteR")
+install.packages("twitteR")
 library("twitteR")
 
 
