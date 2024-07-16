@@ -63,19 +63,6 @@ lm(mpg ~ weight)
 
 summary(lm(mpg ~ weight))
 
-#통계학 기반의 데이터 회귀 분석
-#1.회귀모델의 가정
-# 1)선형성(독립변수의 변화에 따라 종속 변수도 일정크기로 변화)
-# 2)독립성(잔차와 독립변수의 값이 관련돼 있지 않음)
-# 3)등분산성(독립변수의 모든 값에 오차들이 분산이 일정)
-# 4)비상관성(관측치들의 잔차들끼리 상관이 없어야 함 )
-# 5)정상성(잔차항이 정규분포를 이루어야 함)
-#residuals(예측값과 실제값의 차이)
-#2.R제곱값이 0.7이상이면 충분히 잘 만들어진 모델이라고 판단.
-#3. Adjusted R-squared(조절된 결정계수) : 모델에 반영되는 독립변수의 숫자가 증가함에 따라 결정계수가 커지는 성향, 이를 조절하기 위함 . 
-#4. F-statistic : MSR(평균회귀제곱)/평균오차제곱(MSE) -> 표준오차보다 회귀식으로 설명되는 부분이 어느정도 더 많은지 
-
-
 colnames(auto_mpg)
 
 auto_mpg5<-auto_mpg %>% select(mpg,displacement,horsepower,weight,acceleration) %>% filter(horsepower!="?")

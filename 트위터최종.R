@@ -1,274 +1,315 @@
+rm(list = ls())
 
-rm(list=ls())
+
+install.packages("tm")
+library(tm)
+
+############################### 데이터 수집############################################
 
 install.packages("twitteR")
+#twitteR 패키지 불러오기
 
-library(twitteR)
+#본인 인증키 입력
+api_key<-""
+api_secret<-""
+access_token<-""
+access_token_secret<-""
+?setup_twitter_oauth
+setup_twitter_oauth(api_key,api_secret,access_token,access_token_secret)
+keyword<-'bigdata'
+?searchTwitter
+#bigdata.tw<-searchTwitter(keyword, since='2014-01-01', n=10000, lang = 'en')
 
-#####################################################################
-# (1) 트위터에 접속해서 자료 가져오기
-
-api_key<-"tUEJMyiUl43fiDdItpxDId3xf"
-
-api_secret<-'SuulRr5J959vUWttPuORiCCgjuDjbSAIKRiIWyq1PExTYTc5p1'
-
-access_token<-'2795354162-o8nZZ5Qpbn7Ln3F9mBrp6IhnlnhWb5JXbyjGCc8'
-
-access_token_secret<-'LKENgOz7fIddjItmJ4M2isWtwYtGhTXSJzuqnYQseutLM'
-
-
-?twitteR::setup_twitter_oauth()
-
-setup_twitter_oauth(api_key,api_secret,access_token,access_token_secret)  # 1 yes를 선택함.
-
-keyword<- 'bigdata'
+bigdata.tw<-searchTwitter(keyword, since='2014-01-01', n=1000, lang = 'en')
 
 
-?twitteR::searchTwitter()
-
-bigdata.tw<- searchTwitter(keyword, since='2014-01-01', n=1000, lang = 'en')
 
 
+str(bigdata.tw)
 is(bigdata.tw)
-
-
-tweet1<-bigdata.tw[[1]]
-
-
-is(tweet1)
-
-tweet1$created
-
-tweet1$favoriteCount
-
-tweet1$favorited
-
-
-
-tweet1$id
-
-
-tweet1$isRetweet
-
-
-tweet1$latitude
-
-tweet1$replyToSID
-
-tweet1$text
-
-tweet1$screenName
-
-
-is(tweet1$getText())
-
-
-
+class(bigdata.tw)
+bigdata.tw[1:3]
+bigdata.tw[1:200]
+tweet<-bigdata.tw[[1]]
+tweet$getScreenName()
+#getScreenName 정보를 가져온다. 해당 메시지를 작성한 사람의 이름을 볼 수 있다.
+tweet$getText()
+#list list 형태로 되어 있는 bigdata.tw를 data.frame 형태로 변환하여 저장텍스트만 추출해서 저장
 
 class(bigdata.tw)
-
-
-
-twitteR::twListToDF()
-
-
 bigdata.df<-twListToDF(bigdata.tw)
-
-
-
 class(bigdata.df)
-
-bigdata.df[1,1]
-
-
-bigdata.df
-
-View(bigdata.df)
-
 bigdata.text<-bigdata.df$text
 
+View(bigdata.text)
 
 
-head(bigdata.text)
+############################### 데이터 전처리  및 가공############################################
 
-
-class(bigdata.text)
-
-#####################################################################
-# (2) 데이터 전처리  및 가공
 
 #1) Corpus(텍스트 문서의 집합) 생성
-
 # 데이터마이닝의 절차 중 데이터의 정제, 통합, 선택, 변환의 과정을 거친 
 #구조화된 단계로서 더 이상 추가적인 절차없이 데이터 마이닝 알고리즘 실험에서 활용될 수 있는 상태
 
 
-# Corpus는 저장장소를 표시하는  DirSource, VectorSource, DataframeSource처럼 디렉토리, 각 벡터값,
+
+# Corpus는 저장장소를 표시하는  DirSource, VectorSource, DataframeSource처럼 디렉토리, 각 벡터값, 
+# csv  파일 같은 데이터 프레임을 통해 읽어들여 생성된다.
 
 
-is(bigdata.text)
-
-
-library(tm)
 
 my.corpus<-Corpus(VectorSource(bigdata.text))
+#현재 만들어진 object인 bigdata.text는 트위터 메시지에서 text 부분만 추출한 벡터 형식
+#VectorSource를 사용
 
-
-inspect(my.corpus[[1]])
-
-
-inspect(my.corpus[[2]])
-
-# tm패키지 내에서는 Corpus의 형식을 가지는 데이터들의 변형을 위한 tm_map() 함수가 존재
-
-
-inspect(my.corpus[1:10])
-
-
-?stripWhitespace
-?tm_map
-
-# 이 함수를 통해, Corpus() 형식의 데이터에 일반적인 함수를 적용해서 가공할 수 있음.
-
-
-class(inspect(my.corpus[[1]]))
+is(my.corpus)
 
 
 my.corpus[[1]]
 
-nchar(my.corpus)
 
-my.corpus<-tm_map(my.corpus, stripWhitespace)  # 대부분의 경우 빈 공간이 있으면 "\n"으로 변경되어 있음. 분석할 때 걸림돌이 되므로, 반드시 처리하고 진행해야함.
-
-
-inspect(my.corpus[[1]])
-# @\\S* @뒤에 띄어쓰기 없이 붙어 있는 단어를 제거한다. (s는 공백임. 대문자S는 반대)
-
-#gsub
-
-?content_transformer
-
-#tm_map for an interface to apply transformations to corpora
-
-?tm_map
+#문서 내용을 보는 방법은 inspect()함수를 통해서 array를 지정해서 선택해 볼 수있다.
 
 
 
-my.corpus<-tm_map(my.corpus,content_transformer(gsub), pattern='@\\S*', replacement='' )
+inspect(my.corpus[1:2])
 
-inspect(my.corpus[[1]])
+#tm 패키지 내에는 Corpus의 형식을 가지는 데이터들의 변형을 위한 tm_map()이라는 함수가 있다.
+# 이 함수를 사용하면 Corpus() 형식의 데이터에 일반적인 함수를 적용해서 전처리 등의 가공을 할 수 있다.
 
-getTransformations()
 
-#위에 나온 5개의 함수를 제외한 함수들은 content_transformer 사용해서 함
+#빈공간(white space) 제거 
+my.corpus<-tm_map(my.corpus, stripWhitespace)
+
+
+#대부분의 경우 중간에 빈 공간이 있으면 "\n"으로 변경되어서 
+# 분석할 때 걸림돌이 될 수 있으므로, 반드시 처리하고 진행하여야 한다.
+inspect(my.corpus)
+
+my.corpus<-tm_map(my.corpus, content_transformer(gsub), pattern='@\\S*', replacement='')
+
+
+#@\\S*   @뒤에 띄어쓰기 없이 붙어있는 단어를 제거하라
+
+# @로 연결된 ID 부분이 모두 제거
+
+
+
+inspect(my.corpus)
+
 
 
 my.corpus<-tm_map(my.corpus, content_transformer(gsub), pattern='http\\S*', replacement='')
 
+#http로 시작되는 부분 제거
 
-inspect(my.corpus[[1]])
 
-#Punctuation  (#, ···, ? , ! , ~ , @ , $, &, % , .  ,)
+inspect(my.corpus)
+
+
+#문장 부호 및 구두점 제거(removePunctuation)
+
+# #, , ?, !, ~, @, $, &, %, 마침표(.), 쉼표(,) 등의 문장 부호 제거
+
 
 my.corpus<-tm_map(my.corpus, removePunctuation)
 
-inspect(my.corpus[[1]])
 
-
-
-# 한글의 경우 소문자 변경시 오류 발생하므로 미리 처리 한 후 진행
+inspect(my.corpus)
 
 
 my.corpus<-tm_map(my.corpus, content_transformer(tolower))
 
-inspect(my.corpus[[1]])
+inspect(my.corpus)
+
+
+
+#tm 패키지에는 stop words라는 것이 있다. 한글에서는 조사에 해당되면 띄어쓰기
+# 등을 통해 확인 할 수 있다. 영어의 갱우 기본적으로 174개의 제외어(stop word)를 가지고 있다.
+
 
 stopwords('en')
 
+
 my.corpus<-tm_map(my.corpus, removeWords, stopwords('en'))
+# 영어의 기본 제외어(stop word)에 해당되는 174개의 단어들은 제거
 
 
-inspect(my.corpus[[1]])
+inspect(my.corpus)
 
-# 불용어 리스트에서 사용자가 별도로 더 추가하여 변수를 생성한다음 그걸 제거할 수 도 있음.
-mystopword <- c(stopwords('en'), 'rt','via','even')
-
-
-tail(mystopword)
-
-my.corpus<-tm_map(my.corpus, removeWords, mystopword)
+is(stopwords('en'))
 
 
+mystopwords<-c(stopwords('en'),'rt','via','even')
+
+#만약에 기본적인 제외어(stop words)이외에 분석에 있어 의미가
+#없다고 생각되는 단어는 벡터를 만들어 함께 제외한다.
+
+my.corpus<-tm_map(my.corpus, removeWords, mystopwords)
 
 
-inspect(my.corpus[[1]])
+inspect(my.corpus)
 
-#(3) 자연어처리 (형태소분석stemming)
-
-
-?tm::stemDocument()
-
-
-# updated   update  updating
-
-test1<-stemDocument(c('updated',   'update',  'updating'))
-
-
-?tm::stemCompletion()  #dictionary	 A Corpus or character vector to be searched for possible completions
-
-
-stemCompletion(test1, dictionary = c('updated',   'update',  'updating'))
+############################### 자연어 처리############################################
 
 
 
-
-data("crude")
-
-?crude
-
-
-inspect(crude[[1]])
-
-?stemCompletion
-
-stemCompletion(c('be','is',   'am',  'are'), crude)
-
-stemCompletion(c("compan", "entit", "suppl"), crude)
-
-
-# stemDocument와 stemCompletion 과정이 있음. 
-# stemDocument: 앞 어간을 제외한 나머지 부분을 잘라버림. (이 과정을 stemming이라 함.)  ex) updated, update, updating -> updat
-
-
-# stemCompletion: stemming된 단어와 완성을 위한 dictionary를 여기에 넣으면 가장 기본적인 어휘로 완성시켜줌, 즉 그냥 처리했으면 각각 1개씩 집계되었을 updated, update, updating이 3건의 update로 모이게 됨.
-
-inspect(my.corpus[[1]])
-
-my.corpus<-tm_map(my.corpus, stemDocument)  # 어간만 남김
+# 텍스트 마이닝 시 자연어 처리는 기본적으로 형태소 분석을 하는 과정을 포함
+#영문의 경우 제외어를 처리하는 과정에서 접속사, 대명사 제거하고, 공통 어간을
+#가지는 단어를 묶기 위해 stemming하여 처리한다.
 
 
 
-inspect(my.corpus[[1]])
+# 1) stemmimg
 
-# stemCompletion을 할 때 잘못하면 모든 값이 NA가 되버리는 경우가 있어 이를 방지하기 위해, 몇 단계가 추가된 함수를 새롭게 정의함.
+# tm 패키지에서는 stemming을 하고자 할 때 사용하는 함수에는
+# stemDocument와 stemCompletion이 있다.
 
-stemCompletion_mod <- function(x,dict){
-  PlainTextDocument(stripWhitespace(paste(stemCompletion(unlist(strsplit(as.character(x)," ")),dictionary=dict,type='first'),sep="",collapse=" ")))
-} 
 
-# 1. as.character: 입력된 데이터를 character형으로 바꾸고,
-# 2. strsplit: character정보를 " " 한칸 띄어쓰기에 맞춰 분리시켜 리스트로 만듬.
-# 3. unlist: 그걸 unlist시켜서 벡터로 만듬
-# 4. 이내용을 stemCompletion을 이용해서, 매개변수로 들어오는 dictionary와 first타입을 적용해서(먼저 발견되는 양식을 기준으로 함) 단어를 완성시킴.
-# type: prevalent: Default. Takes the most frequent match as completion. // first: Takes the first found completion. // longest: Takes the longest completion in terms of characters.// none: Is the identity.// random:Takes some completion. // shortest: Takes the shortest completion in terms of characters.
-# 5. 나온 결과들을 paste함수로 모으고, 공백없이 처리함 붙이되, 공백(" ")이 나올경우 collapse(분리)함.
-# 6. stripWhitespace를 통해 여백(연속된 공백)을 제거해버림
-# 7. PlainTextDocument: 이렇게 나온 결과를 PlainTextDocument 데이터로 만듬.
+test<-stemDocument(c('updated', 'update', 'updating'))
 
+
+
+test<-stemCompletion(test, dictionary = c('updated', 'update', 'updating'))
+
+test
+# stemCompletion은 stemming된 단어와 완성을 위한 dictionary를 함께 넣으면 가장 기본적인
+# 어휘로 완성시켜주는 역할을 한다.stemCompletion은 반드시 dictionary가 필요하다.
+
+
+#스테밍을 하기전에 stemCompletion에서 사용될 dictionary를 위해 현재의 Corpus 파일을
+# dict.corpus에 저장한다.
 
 dict.corpus<-my.corpus
 
+my.corpus<-tm_map(my.corpus, stemDocument)
+# stemDocument 하기 전과 비교하면 어간이 추출된 것을 확인 할 수 있다.
 
-my.corpus<- lapply(my.corpus, stemCompletion_mod, dict.corpus)
+is(my.corpus)
+inspect(my.corpus)
 
-inspect(my.corpus[[1]])
+
+# stemCompletion을 할 때 잘 못 하면 모든 값이 NA 가 되어 버리는 경우가 있어 
+#이를 방지하기 위해 completion을 위해 간단하게 제작된 함수를 실행
+
+
+
+?paste
+
+
+stemCompletion_mod<-function(x, dict){
+  
+  PlainTextDocument(stripWhitespace(paste(stemCompletion(unlist(strsplit(as.character(x), " ")), dictionary = dict, type='first'), sep="", collapse = " ")))
+  
+}
+
+
+#type을 first로 지정해주어 등장하는 첫 번째 어휘로 어간이 같은 모든 단어를 사용하도록 설정
+
+
+
+my.corpus<-lapply(my.corpus, stemCompletion_mod, dict=dict.corpus)
+
+
+
+
+############################### TDM(Term Document Matrix) 구축 ############################################
+
+
+#행은 각 단어를 나타내고, 열은 트위터 메시지를 나타내는 매트릭스가 생성된다.
+
+?TermDocumentMatrix
+
+
+
+
+inspect(my.corpus)
+
+
+
+is(my.corpus)
+
+
+
+my.corpus<-Corpus(VectorSource(my.corpus))
+
+is(my.corpus)
+
+
+
+inspect(my.corpus[1:2])
+
+
+
+my.TDM<-TermDocumentMatrix(my.corpus)
+dim(my.TDM)
+#단어가 2819개 추출되어 2819개의 행과 1000개의 열
+
+
+
+
+inspect(my.TDM[55:60, 1:10])
+# 처음 10개의 메시지의 55번째에서 60번째 단어의 분포 확인 
+
+# TDM 구축
+
+#TermDocumentMatrix()함수 : 행은 각 단어, 열은 트위터 메시지를 나타내는 매트릭스
+
+
+# 단어 사전
+#단어 사전은 복수의 문자들의 집합으로 텍스트 마이닝에서 분석에 사용하고자 하는 단어들의 집합
+
+myDict<-c('bigdata', 'data','analyst','cloud','company','privacy','analytics','business','hadoop','datascience')
+
+my.TDM<-TermDocumentMatrix(my.corpus, control=list(dictionary=myDict))
+
+
+
+inspect(my.TDM)
+
+findAssocs(my.TDM, 'datascience', 0.01)
+
+# findAssocs 함수를 통해 my.TDM에서 datascienc와 연관성이 0.01이상인 단어 표시
+
+
+#연관분석
+
+
+
+# 연관분석을 수행하는  대표적인 알고리즘으로는 apriori와 FP(frequent-pattern)-성장이 있다.
+
+# apriori알고리즘에서 연관 분석을 수행하기 위해 빈발 아이템 집합과 연과 규칙이라고 하는 
+# 두가지 형태로 관계를 표현
+
+
+
+#연관분석을 하기 위해서는 단일 처리형(transaction)으로 변환
+
+
+transaction_m<-as(as.matrix(my.TDM), "transactions")
+
+
+
+
+rulles.all<-apriori(transaction_m, parameter = list(supp=0.01,conf=0.5))
+
+
+
+
+my.TDM.m<-as.matrix(my.TDM)
+
+
+term.freq<-sort(rowSums(my.TDM.m),decreasing=T)
+
+
+
+
+
+wordcloud(words=names(term.freq), freq = term.freq, min.freq = 15,random.order = F,colors = brewer.pal(8,'Dark2'))
+
+
+
+
+
+
+
